@@ -17,10 +17,16 @@ export default function GitHubConnectButton({ isAuthenticated, onSignOut, label 
   const handleConnect = async () => {
     setIsLoading(true)
     try {
+      // Utiliser NEXT_PUBLIC_SITE_URL si disponible (définie au build), sinon utiliser window.location.origin
+      // En production, assurez-vous que NEXT_PUBLIC_SITE_URL est définie dans vos variables d'environnement
+      const baseUrl = typeof window !== 'undefined' 
+        ? (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin)
+        : ''
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
+          redirectTo: `${baseUrl}/api/auth/callback`,
           scopes: 'read:user',
           skipBrowserRedirect: false,
         },
