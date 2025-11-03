@@ -12,104 +12,110 @@ interface LeaderboardTableProps {
 
 export default function LeaderboardTable({ users, currentUserGithubUsername }: LeaderboardTableProps) {
   return (
-    <div className="space-y-2">
-      {users.map((user, index) => (
-        <div
-          key={user.id}
-          className={`group bg-[#161b22] border border-[#21262d] rounded-lg overflow-hidden transition-all hover:border-[#30363d] ${
-            user.github_username === currentUserGithubUsername
-              ? 'ring-2 ring-[#26a641] border-[#26a641]'
-              : ''
-          }`}
-        >
-          <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 p-4 lg:p-6">
-            <div className="flex items-center gap-4 lg:gap-6 flex-1 min-w-0">
-              {/* Rank Position */}
-              <div className="flex-shrink-0 w-10 lg:w-12">
-                <div className="flex items-center justify-center">
+    <div className="overflow-x-auto">
+      <div className="border border-gray-600/30 rounded-gh overflow-hidden bg-gh-tertiary">
+        <table className="w-full border-collapse">
+          <thead className="hidden lg:table-header-group">
+            <tr className="  ">
+              <th className="text-base-content/60 font-medium py-4 px-4 text-left">Rank</th>
+              <th className="text-base-content/60 font-medium py-4 px-4 text-left">User</th>
+              <th className="text-base-content/60 font-medium py-4 px-4 text-left">Contributions</th>
+              <th className="text-base-content/60 font-medium py-4 px-4 text-left">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user, index) => (
+              <tr
+                key={user.id}
+                className={`hover:bg-gh-tertiary/50 transition-colors ${
+                  user.github_username === currentUserGithubUsername
+                    ? 'bg-success/10 ring-2 ring-success/50'
+                    : ''
+                }`}
+              >
+              {/* Rank */}
+              <td className="align-middle py-4 px-4">
+                <div className="flex items-center justify-center lg:justify-start">
                   {index < 3 ? (
                     <span className="text-xl lg:text-2xl font-bold">
                       {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
                     </span>
                   ) : (
-                    <span className="text-lg lg:text-xl font-bold text-gray-500">
+                    <span className="text-base lg:text-lg font-semibold text-base-content/60">
                       #{index + 1}
                     </span>
                   )}
                 </div>
-              </div>
+              </td>
 
-              {/* Avatar */}
-              <div className="flex-shrink-0">
-                <Image
-                  src={user.avatar_url || '/default-avatar.png'}
-                  alt={user.display_username || user.github_username}
-                  width={48}
-                  height={48}
-                  className="lg:w-14 lg:h-14 rounded-full border-2 border-[#30363d]"
-                />
-              </div>
-
-              {/* Username */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 lg:gap-3 mb-1 lg:mb-2 flex-wrap">
-                  <Link
-                    href={`https://github.com/${user.github_username}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-lg lg:text-xl font-semibold text-gray-100 hover:text-[#58a6ff] transition-colors truncate"
-                  >
-                    {user.display_username || user.github_username}
-                  </Link>
-                  {user.github_username === currentUserGithubUsername && (
-                    <span className="px-2 py-0.5 text-xs font-medium bg-[#1f6feb] text-white rounded-full flex-shrink-0">
-                      You
-                    </span>
-                  )}
+              {/* User Info */}
+              <td className="align-middle py-4 px-4">
+                <div className="flex items-center gap-3">
+                  <div className="avatar">
+                    <div className="w-10 lg:w-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                      <Image
+                        src={user.avatar_url || '/default-avatar.png'}
+                        alt={user.display_username || user.github_username}
+                        width={48}
+                        height={48}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link
+                        href={`https://github.com/${user.github_username}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-base-content hover:text-primary transition-colors truncate"
+                      >
+                        {user.display_username || user.github_username}
+                      </Link>
+                      {user.github_username === currentUserGithubUsername && (
+                        <span className="badge badge-primary badge-sm rounded-gh">
+                          You
+                        </span>
+                      )}
+                    </div>
+                    <Link
+                      href={`https://github.com/${user.github_username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-base-content/60 hover:text-primary transition-colors truncate block"
+                    >
+                      @{user.github_username}
+                    </Link>
+                  </div>
                 </div>
-                <Link
-                  href={`https://github.com/${user.github_username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs lg:text-sm text-gray-400 hover:text-[#58a6ff] transition-colors"
-                >
-                  @{user.github_username}
-                </Link>
-              </div>
-            </div>
+              </td>
 
-            {/* Total Contributions */}
-            <div className="flex items-center justify-between lg:justify-end gap-4 lg:gap-0">
-              <div className="flex-shrink-0 text-left lg:text-right">
-                <div className="text-2xl lg:text-3xl font-bold text-[#39d353] mb-0.5 lg:mb-1">
-                  {user.total_contributions.toLocaleString()}
-                </div>
-                <div className="text-xs text-gray-500 uppercase tracking-wider">
-                  Contributions
-                </div>
-              </div>
-
-              {/* Contribution Graph - Desktop */}
-              <div className="hidden lg:block flex-shrink-0 w-[350px] xl:w-[400px]">
+              {/* Contribution Grid */}
+              <td className="align-middle py-4 px-4">
                 <ContributionGrid
                   contributionsData={user.contributions_data || {}}
                   username={user.github_username}
                   compact={true}
                 />
-              </div>
-            </div>
+              </td>
 
-            {/* Contribution Graph - Mobile/Tablet */}
-            <div className="lg:hidden">
-              <ContributionGrid
-                contributionsData={user.contributions_data || {}}
-                username={user.github_username}
-                compact={true}
-              />
-            </div>
-          </div>
-        </div>
-      ))}
+              {/* Total Contributions */}
+              <td className="align-middle py-4 px-4">
+                <div className="flex items-center justify-end">
+                  <div className="text-right">
+                    <div className="text-xl lg:text-2xl font-bold text-success">
+                      {user.total_contributions.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-base-content/60 hidden lg:block">
+                      contributions
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

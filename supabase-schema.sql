@@ -85,3 +85,42 @@ SELECT
   RANK() OVER (ORDER BY p.total_contributions DESC) as rank
 FROM public.profiles p
 ORDER BY p.total_contributions DESC;
+
+-- Table pour les sponsors
+CREATE TABLE IF NOT EXISTS public.sponsors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) NOT NULL,
+  stripe_customer_id VARCHAR(255) UNIQUE,
+  stripe_subscription_id VARCHAR(255) UNIQUE,
+  website_url TEXT,
+  company_name VARCHAR(255),
+  description TEXT,
+  status VARCHAR(50) DEFAULT 'pending', -- pending, active, cancelled, expired
+  payment_date TIMESTAMP WITH TIME ZONE,
+  expires_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Index pour optimiser les requêtes sponsors
+CREATE INDEX IF NOT EXISTS idx_sponsors_status ON public.sponsors(status);
+CREATE INDEX IF NOT EXISTS idx_sponsors_expires_at ON public.sponsors(expires_at);
+CREATE INDEX IF NOT EXISTS idx_sponsors_stripe_subscription_id ON public.sponsors(stripe_subscription_id);
+
+-- Enable Row Level Security pour sponsors
+ALTER TABLE public.sponsors ENABLE ROW LEVEL SECURITY;
+
+-- Policy pour permettre à tout le monde de lire les sponsors actifs
+DROP POLICY IF EXISTS "Active sponsors are viewable by everyone" ON public.sponsors;
+CREATE POLICY "Active sponsors are viewable by everyone" 
+  ON public.sponsors
+  FOR SELECT
+  USING (status = 'active');
+
+-- Policy pour permettre l'insertion (par le système via service role)
+DROP POLICY IF EXISTS "Service can manage sponsors" ON public.sponsors;
+CREATE POLICY "Service can manage sponsors"
+  ON public.sponsors
+  FOR ALL
+  USING (true)
+  WITH CHECK (true);
