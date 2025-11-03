@@ -4,10 +4,6 @@ import { useState } from 'react'
 import { useAppProvider } from '@/app/app-provider'
 import { User } from '@/types/user'
 
-import SearchModal from '@/components/search-modal'
-import Notifications from '@/components/dropdown-notifications'
-import DropdownHelp from '@/components/dropdown-help'
-import ThemeToggle from '@/components/theme-toggle'
 import DropdownProfile from '@/components/dropdown-profile'
 
 export default function Header({
@@ -50,6 +46,14 @@ export default function Header({
 
           {/* Header: Right side */}
           <div className="flex items-center space-x-3">
+            {/* Logo */}
+            <img
+              src="/os.png"
+              alt="Logo"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
             {/*  Divider */}
             <hr className="w-px h-6 bg-gh-primary border-none" />
             <DropdownProfile align="right" currentUser={currentUser} onSignOut={onSignOut} />

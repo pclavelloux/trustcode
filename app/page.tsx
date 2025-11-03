@@ -132,7 +132,7 @@ export default function Home() {
         <div className="grid grid-cols-6 gap-8 py-8">
           {/* Left Sponsor Panel - Desktop only - 1 column */}
           <div className="col-span-1 min-w-0 bg-gh-tertiary">
-            <SponsorPanel />
+            <SponsorPanel side="left" />
           </div>
 
           {/* Main Content - Full width on mobile, 4 columns on desktop */}
@@ -182,7 +182,7 @@ export default function Home() {
 
           {/* Right Sponsor Panel - Desktop only - 1 column */}
           <div className=" col-span-1 bg-gh-tertiary">
-            <SponsorPanel />
+            <SponsorPanel side="right" />
           </div>
         </div>
       </div>
