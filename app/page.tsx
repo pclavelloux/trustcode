@@ -90,46 +90,6 @@ export default function Home() {
     window.location.reload()
   }
 
-  // Sample sponsors data - Replace with real data from your database/API
-  const leftSponsors = [
-    {
-      id: '1',
-      name: 'Capgo',
-      description: 'Instant updates for Capacitor app. Ship updates, fixes, changes, and features within minutes.',
-      backgroundColor: '#dbeafe',
-      iconColor: '#1e40af',
-    },
-    {
-      id: '2',
-      name: 'Capgo',
-      description: 'Instant updates for Capacitor app. Ship updates, fixes, changes, and features within minutes.',
-      backgroundColor: '#dbeafe',
-      iconColor: '#1e40af',
-    },
-    null, // Empty ad spot
-  ]
-
-  const rightSponsors = [
-    {
-      id: '3',
-      name: 'Capgo',
-      description: 'Instant updates for Capacitor app. Ship updates, fixes, changes, and features within minutes.',
-      backgroundColor: '#dbeafe',
-      iconColor: '#1e40af',
-    },
-    {
-      id: '4',
-      name: 'Capgo',
-      description: 'Instant updates for Capacitor app. Ship updates, fixes, changes, and features within minutes.',
-      backgroundColor: '#dbeafe',
-      iconColor: '#1e40af',
-    },
-    null, // Empty ad spot
-  ]
-
-  // Combine all sponsors (not used in current layout)
-  const allSponsorsForBanner = [...leftSponsors, ...rightSponsors]
-
   const filteredUsers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return users
@@ -169,10 +129,10 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 max-w-[1920px]">
        
         {/* Grid Layout: responsive - 1 column on mobile, 6 columns (1-4-1) on desktop */}
-        <div className="grid grid-cols-6 gap-4 gap-8 py-8">
+        <div className="grid grid-cols-6 gap-8 py-8">
           {/* Left Sponsor Panel - Desktop only - 1 column */}
           <div className="col-span-1 min-w-0 bg-gh-tertiary">
-            <SponsorPanel sponsors={leftSponsors} />
+            <SponsorPanel />
           </div>
 
           {/* Main Content - Full width on mobile, 4 columns on desktop */}
@@ -222,7 +182,7 @@ export default function Home() {
 
           {/* Right Sponsor Panel - Desktop only - 1 column */}
           <div className=" col-span-1 bg-gh-tertiary">
-            <SponsorPanel sponsors={rightSponsors} />
+            <SponsorPanel />
           </div>
         </div>
       </div>
