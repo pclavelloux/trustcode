@@ -1,11 +1,11 @@
 # 🔄 Configuration de l'automatisation du rafraîchissement des contributions
 
-Ce guide explique comment configurer l'automatisation pour rafraîchir automatiquement les contributions GitHub toutes les 12 heures.
+Ce guide explique comment configurer l'automatisation pour rafraîchir automatiquement les contributions GitHub une fois par jour.
 
 ## 📋 Vue d'ensemble
 
 L'automatisation utilise :
-- **Vercel Cron Jobs** pour planifier l'exécution toutes les 12 heures
+- **Vercel Cron Jobs** pour planifier l'exécution une fois par jour à minuit UTC
 - Une route API protégée `/api/cron/refresh-contributions` qui rafraîchit les contributions de tous les utilisateurs ayant un token GitHub
 
 ## 🚀 Configuration sur Vercel
@@ -49,13 +49,13 @@ Le fichier `vercel.json` est déjà configuré avec le cron job :
   "crons": [
     {
       "path": "/api/cron/refresh-contributions",
-      "schedule": "0 */12 * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
 ```
 
-**Note :** Le cron job s'exécute toutes les 12 heures (`0 */12 * * *` signifie : à 00:00 et 12:00 UTC chaque jour).
+**Note :** Le cron job s'exécute une fois par jour à minuit UTC (`0 0 * * *` signifie : à 00:00 UTC chaque jour).
 
 ### 3. Vérification du déploiement
 
@@ -199,7 +199,7 @@ Similaire à cron-job.org, avec monitoring en bonus.
 
 ## 📝 Notes importantes
 
-1. **Tous les 12 heures** : Le cron job s'exécute à 00:00 et 12:00 UTC chaque jour
+1. **Une fois par jour** : Le cron job s'exécute à 00:00 UTC chaque jour
 2. **Performance** : Le cron job traite tous les profils séquentiellement. Pour de grandes bases de données, envisagez de paralléliser ou de paginer
 3. **Limites API GitHub** : GitHub a des limites de taux (5000 requêtes/heure). Le cron job devrait rester dans ces limites
 4. **Tokens expirés** : Les tokens GitHub expirés seront ignorés. Les utilisateurs devront mettre à jour leur token manuellement
@@ -213,8 +213,9 @@ Pour changer la fréquence du cron job, modifiez `vercel.json` :
   "crons": [
     {
       "path": "/api/cron/refresh-contributions",
-      "schedule": "0 */6 * * *"  // Toutes les 6 heures
-      // Ou "0 0 * * *" pour une fois par jour à minuit
+      "schedule": "0 0 * * *"  // Une fois par jour à minuit (par défaut)
+      // Ou "0 */12 * * *" pour toutes les 12 heures
+      // Ou "0 */6 * * *" pour toutes les 6 heures
       // Ou "0 */1 * * *" pour toutes les heures
     }
   ]
@@ -222,8 +223,9 @@ Pour changer la fréquence du cron job, modifiez `vercel.json` :
 ```
 
 Format cron : `minute heure jour mois jour-semaine`
+- `0 0 * * *` = une fois par jour à minuit (par défaut)
 - `0 */12 * * *` = toutes les 12 heures (00:00 et 12:00)
-- `0 0 * * *` = une fois par jour à minuit
+- `0 */6 * * *` = toutes les 6 heures
 - `0 */1 * * *` = toutes les heures
 - `*/30 * * * *` = toutes les 30 minutes
 
