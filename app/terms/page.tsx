@@ -108,16 +108,16 @@ export default function TermsPage() {
                     rel="noopener noreferrer"
                     className="text-gray-300 hover:underline"
                   >
-                    Twitter
+                    X
                   </a>
                   {' '}or{' '}
                   <a 
-                    href="https://paulinecx.beehiiv.com/subscribe" 
+                    href="mailto:hi@paulinecx.com" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-gray-300 hover:underline"
                   >
-                    Newsletter
+                    Email
                   </a>.
                 </p>
               </section>

@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User } from '@/types/user'
-import Header from '@/components/Header'
-import ThemeToggle from '@/components/ThemeToggle'
-import { createClient } from '@/lib/supabase'
+import Header from '@/components/ui/header'
 import { Trash2 } from 'lucide-react'
 
 export default function ProfilePage() {
@@ -67,19 +65,21 @@ export default function ProfilePage() {
         }),
       })
 
+      const responseData = await response.json()
+      
       if (!response.ok) {
-        throw new Error('Failed to update profile')
+        throw new Error(responseData.error || 'Failed to update profile')
       }
 
-      const updatedProfile = await response.json()
-      setCurrentUser(updatedProfile)
+      setCurrentUser(responseData)
       setSuccess('Profile updated successfully!')
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000)
     } catch (error) {
       console.error('Error updating profile:', error)
-      setError('Failed to update profile. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update profile. Please try again.'
+      setError(errorMessage)
     } finally {
       setIsSaving(false)
     }
@@ -131,7 +131,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
         </div>
-        <ThemeToggle />
+     
       </main>
     )
   }
@@ -237,7 +237,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <ThemeToggle />
+      
     </main>
   )
 }

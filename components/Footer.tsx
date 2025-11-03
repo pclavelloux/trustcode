@@ -34,7 +34,7 @@ export default function Footer() {
               aria-label="Newsletter de Pauline"
             >
               <Mail className="w-5 h-5" />
-              <span className="hidden sm:inline">Newsletter</span>
+              
             </a>
             
             {/* Terms of Services Link */}
@@ -43,6 +43,16 @@ export default function Footer() {
               className="text-base-content/70 hover:text-base-content transition-colors text-sm"
             >
               Terms of Services
+            </Link>
+            
+            {/* Analytics Link */}
+            <Link
+              href="https://datafa.st/share/69090f8c0de14f3c74d0c61b"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-base-content/70 hover:text-base-content transition-colors text-sm"
+            >
+              Analytics
             </Link>
           </div>
         </div>

@@ -22,11 +22,11 @@ export default function Home() {
     // Check for success/error messages in URL
     const params = new URLSearchParams(window.location.search)
     const isFirstTime = params.get('firstTime') === 'true'
-    
+
     if (params.get('success')) {
       // Remove query params from URL
       window.history.replaceState({}, '', '/')
-      
+
       // Si c'est une première connexion, afficher les confettis et le toast
       if (isFirstTime) {
         // Lancer les confettis
@@ -38,7 +38,7 @@ export default function Home() {
           return Math.random() * (max - min) + min
         }
 
-        const interval: NodeJS.Timeout = setInterval(function() {
+        const interval: NodeJS.Timeout = setInterval(function () {
           const timeLeft = animationEnd - Date.now()
 
           if (timeLeft <= 0) {
@@ -64,7 +64,7 @@ export default function Home() {
           setSuccessMessage('')
         }, 5000)
       }
-      
+
       // Wait a bit for the profile to be created, then fetch current user
       // Retry multiple times in case the profile takes time to be created
       const retryFetchUser = async (attempts = 5) => {
@@ -145,8 +145,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-base-300">
       {/* Header */}
-      <Header 
-        currentUser={currentUser} 
+      <Header
+        currentUser={currentUser}
         onSignOut={handleSignOut}
       />
 
@@ -169,7 +169,7 @@ export default function Home() {
 
       {/* Main Container */}
       <div className="container mx-auto px-4 py-8 max-w-[1920px]">
-       
+
         {/* Grid Layout: responsive - 1 column on mobile, 6 columns (1-4-1) on desktop */}
         <div className="grid grid-cols-6 gap-8 py-8">
           {/* Left Sponsor Panel - Desktop only - 1 column */}
@@ -183,7 +183,7 @@ export default function Home() {
             <div className="text-center mb-8">
               <h1 className="text-4xl lg:text-6xl font-extrabold mb-4 tracking-tight">
                 <span className=" bg-clip-text text-gh-white">
-                  Verified GitHub contributions
+                  Who ships the most?
                 </span>
               </h1>
               <p className="text-base-content/70 text-base lg:text-lg mb-6">
