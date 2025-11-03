@@ -12,6 +12,7 @@ const config: Config = {
         'gh-primary': '#020408',
         'gh-secondary': '#0C1116',
         'gh-tertiary': '#222825',
+        'gh-pink': '#FF66C4',
         'gh-white': '#F0F6FC',
         'gh-white2': '#dedede',
         'gh-primary-blue': '#5991F1',

@@ -88,15 +88,15 @@ export default function ContributionGrid({ contributionsData, username, compact 
     return { weeks: weeksData, monthLabels: monthsArray }
   }, [contributionsData])
 
-  // GitHub exact colors for dark mode
+  // Pink gradient colors for contributions
   const getLevelClasses = (level: number) => {
-    // Using exact GitHub dark mode colors
+    // Pink gradient from light to vibrant (#FF66C4)
     const classes = {
-      0: 'bg-[#161b22]', // No contributions
-      1: 'bg-[#0e4429]', // Level 1
-      2: 'bg-[#006d32]', // Level 2
-      3: 'bg-[#26a641]', // Level 3
-      4: 'bg-[#39d353]', // Level 4
+      0: 'bg-[#161b22]', // No contributions - dark background
+      1: 'bg-[#FFE6F7]', // Level 1 - very light pink
+      2: 'bg-[#FFB3E6]', // Level 2 - light pink
+      3: 'bg-[#FF80D9]', // Level 3 - medium pink
+      4: 'bg-gh-pink', // Level 4 - vibrant pink (most commits)
     }
     return classes[level as keyof typeof classes] || classes[0]
   }
@@ -126,9 +126,15 @@ export default function ContributionGrid({ contributionsData, username, compact 
                   {week.map((day, dayIndex) => (
                     <div
                       key={dayIndex}
-                      className={`w-[10px] h-[10px] rounded-sm ${getLevelClasses(day.level)} transition-all hover:ring-1 hover:ring-[#58a6ff] cursor-pointer`}
+                      className={`w-[10px] h-[10px] rounded-sm ${getLevelClasses(day.level)} transition-all hover:ring-2 hover:ring-gh-pink cursor-pointer relative group`}
                       title={`${format(day.date, 'MMM d, yyyy')}: ${day.count} contribution${day.count !== 1 ? 's' : ''}`}
-                    />
+                    >
+                      {/* Tooltip on hover */}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        {day.count} commit{day.count !== 1 ? 's' : ''}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               ))}
@@ -189,9 +195,15 @@ export default function ContributionGrid({ contributionsData, username, compact 
                   {week.map((day, dayIndex) => (
                     <div
                       key={dayIndex}
-                      className={`w-[11px] h-[11px] rounded-[2px] ${getLevelClasses(day.level)} transition-all hover:ring-2 hover:ring-[#58a6ff] cursor-pointer`}
+                      className={`w-[11px] h-[11px] rounded-[2px] ${getLevelClasses(day.level)} transition-all hover:ring-2 hover:ring-gh-pink cursor-pointer relative group`}
                       title={`${format(day.date, 'MMM d, yyyy')}: ${day.count} contribution${day.count !== 1 ? 's' : ''}`}
-                    />
+                    >
+                      {/* Tooltip on hover */}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        {day.count} commit{day.count !== 1 ? 's' : ''}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               ))}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useAppProvider } from '@/app/app-provider'
 import { User } from '@/types/user'
 
@@ -41,13 +42,15 @@ export default function Header({
               </svg>
             </button>
             {/* Logo */}
-            <img
-              src="/os.png"
-              alt="Logo"
-              width={32}
-              height={32}
-              className="object-contain"
-            />
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <img
+                src="/os.png"
+                alt="Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            </Link>
             {/*  Divider */}
             <hr className="w-px h-6 bg-gh-primary border-none" />
           </div>

@@ -183,7 +183,7 @@ export default function Home() {
             <div className="text-center mb-8">
               <h1 className="text-4xl lg:text-6xl font-extrabold mb-4 tracking-tight">
                 <span className=" bg-clip-text text-gh-white">
-                  Who ships the hardest?
+                  Who ships the most?
                 </span>
               </h1>
               <p className="text-base-content/70 text-base lg:text-lg mb-6">

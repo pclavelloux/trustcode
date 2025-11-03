@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase'
+import { createServerClient } from '@supabase/ssr'
 
 export async function PATCH(
   request: NextRequest,
@@ -10,7 +10,23 @@ export async function PATCH(
     const body = await request.json()
     const { display_username, website_url } = body
 
-    const supabase = createClient()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll().map(cookie => ({
+              name: cookie.name,
+              value: cookie.value,
+            }))
+          },
+          setAll(cookiesToSet) {
+            // Not needed for PATCH requests that don't update auth
+          },
+        },
+      }
+    )
 
     // Vérifier que l'utilisateur est authentifié
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -34,7 +50,15 @@ export async function PATCH(
       .single()
 
     if (error) {
+      console.error('Supabase error:', error)
       throw error
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 404 }
+      )
     }
 
     return NextResponse.json(data)

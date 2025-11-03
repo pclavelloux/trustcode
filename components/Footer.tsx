@@ -34,7 +34,7 @@ export default function Footer() {
               aria-label="Newsletter de Pauline"
             >
               <Mail className="w-5 h-5" />
-              <span className="hidden sm:inline">Newsletter</span>
+              
             </a>
             
             {/* Terms of Services Link */}
