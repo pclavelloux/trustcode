@@ -11,20 +11,15 @@ interface HeaderProps {
 
 export default function Header({ currentUser, onSignOut }: HeaderProps) {
   return (
-    <header className="bg-[#0d1117] border-b border-[#21262d]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-end">
-          {/* Right side - Connect button or User dropdown */}
-          <div className="flex items-center gap-4">
-            {currentUser ? (
-              <UserDropdown currentUser={currentUser} onSignOut={onSignOut} />
-            ) : (
-              <GitHubConnectButton />
-            )}
-          </div>
-        </div>
+    <div className="navbar bg-base-100 border-b border-base-200 shadow-sm sticky top-0 z-50 rounded-none">
+      <div className="navbar-end flex-1">
+        {currentUser ? (
+          <UserDropdown currentUser={currentUser} onSignOut={onSignOut} />
+        ) : (
+          <GitHubConnectButton />
+        )}
       </div>
-    </header>
+    </div>
   )
 }
 

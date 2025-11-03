@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
 import { Settings, LogOut, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
@@ -12,59 +11,31 @@ interface UserDropdownProps {
 }
 
 export default function UserDropdown({ currentUser, onSignOut }: UserDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
-
   const handleSignOut = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    setIsOpen(false)
     onSignOut()
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg hover:bg-[#161b22] transition-colors border border-[#21262d]"
-        aria-label="User menu"
-      >
-        <Settings className="w-5 h-5 text-gray-300" />
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-[#161b22] rounded-lg shadow-xl border border-[#21262d] py-1 z-50">
-          <Link
-            href="/profile"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-[#21262d] transition-colors"
-          >
+    <div className="dropdown dropdown-end">
+      <div tabIndex={0} role="button" className="btn btn-ghost btn-circle rounded-gh">
+        <Settings className="w-5 h-5" />
+      </div>
+      <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-gh w-52 border border-base-300">
+        <li>
+          <Link href="/profile" className="flex items-center gap-2">
             <UserIcon className="w-4 h-4" />
-            Edit my profile
+            <span>Edit my profile</span>
           </Link>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-[#21262d] transition-colors"
-          >
+        </li>
+        <li>
+          <button onClick={handleSignOut} className="flex items-center gap-2">
             <LogOut className="w-4 h-4" />
-            Sign Out
+            <span>Sign Out</span>
           </button>
-        </div>
-      )}
+        </li>
+      </ul>
     </div>
   )
 }

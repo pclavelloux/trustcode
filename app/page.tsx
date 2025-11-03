@@ -1,10 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { User } from '@/types/user'
 import LeaderboardTable from '@/components/LeaderboardTable'
-import Header from '@/components/Header'
+import Header from '@/components/ui/header'
+import SponsorPanel from '@/components/SponsorPanel'
+import SponsorBanner from '@/components/SponsorBanner'
 import { User as UserIcon } from 'lucide-react'
+import GitHubConnectButton from '@/components/GitHubConnectButton'
 
 export default function Home() {
   const [users, setUsers] = useState<User[]>([])
@@ -12,6 +15,7 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     // Check for success/error messages in URL
@@ -87,60 +91,141 @@ export default function Home() {
     window.location.reload()
   }
 
+  // Sample sponsors data - Replace with real data from your database/API
+  const leftSponsors = [
+    {
+      id: '1',
+      name: 'Capgo',
+      description: 'Instant updates for Capacitor app. Ship updates, fixes, changes, and features within minutes.',
+      backgroundColor: '#dbeafe',
+      iconColor: '#1e40af',
+    },
+    {
+      id: '2',
+      name: 'Capgo',
+      description: 'Instant updates for Capacitor app. Ship updates, fixes, changes, and features within minutes.',
+      backgroundColor: '#dbeafe',
+      iconColor: '#1e40af',
+    },
+    null, // Empty ad spot
+  ]
+
+  const rightSponsors = [
+    {
+      id: '3',
+      name: 'Capgo',
+      description: 'Instant updates for Capacitor app. Ship updates, fixes, changes, and features within minutes.',
+      backgroundColor: '#dbeafe',
+      iconColor: '#1e40af',
+    },
+    {
+      id: '4',
+      name: 'Capgo',
+      description: 'Instant updates for Capacitor app. Ship updates, fixes, changes, and features within minutes.',
+      backgroundColor: '#dbeafe',
+      iconColor: '#1e40af',
+    },
+    null, // Empty ad spot
+  ]
+
+  // Combine all sponsors (not used in current layout)
+  const allSponsorsForBanner = [...leftSponsors, ...rightSponsors]
+
+  const filteredUsers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return users
+    return users.filter((u) => {
+      const username = (u.display_username || u.github_username || '').toLowerCase()
+      const login = (u.github_username || '').toLowerCase()
+      return username.includes(q) || login.includes(q)
+    })
+  }, [users, searchQuery])
+
   return (
-    <main className="min-h-screen bg-[#0d1117] text-gray-100">
+    <main className="min-h-screen bg-base-300">
       {/* Header */}
-      <Header currentUser={currentUser} onSignOut={handleSignOut} />
+      <Header 
+        currentUser={currentUser} 
+        onSignOut={handleSignOut}
+      />
 
       {/* Messages */}
       {successMessage && (
-        <div className="fixed top-20 right-6 z-50 max-w-sm">
-          <div className="bg-[#0e4429] border border-[#26a641] rounded-lg p-4 shadow-xl">
-            <p className="text-[#39d353] text-sm font-medium">{successMessage}</p>
+        <div className="toast toast-top toast-end z-50">
+          <div className="alert alert-success">
+            <span>{successMessage}</span>
           </div>
         </div>
       )}
 
       {errorMessage && (
-        <div className="fixed top-20 right-6 z-50 max-w-sm">
-          <div className="bg-red-900/30 border border-red-800 rounded-lg p-4 shadow-xl">
-            <p className="text-red-400 text-sm font-medium">{errorMessage}</p>
+        <div className="toast toast-top toast-end z-50">
+          <div className="alert alert-error">
+            <span>{errorMessage}</span>
           </div>
         </div>
       )}
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        {/* Title */}
-        <div className="mb-12 text-center">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-gray-100 to-gray-400 bg-clip-text text-transparent">
-            GitHub Best Contributors
-          </h1>
-          <p className="text-gray-400 text-lg">
-            Top developers ranked by contributions
-          </p>
-        </div>
+      {/* Main Container */}
+      <div className="container mx-auto px-4 py-8 max-w-[1920px]">
+       
+        {/* Grid Layout: responsive - 1 column on mobile, 6 columns (1-4-1) on desktop */}
+        <div className="grid grid-cols-6 gap-4 gap-8 py-8">
+          {/* Left Sponsor Panel - Desktop only - 1 column */}
+          <div className="col-span-1 min-w-0">
+            <SponsorPanel sponsors={leftSponsors} />
+          </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#21262d] border-t-[#39d353]"></div>
+          {/* Main Content - Full width on mobile, 4 columns on desktop */}
+          <div className="col-span-4 ">
+            {/* Hero */}
+            <div className="text-center mb-8">
+              <h1 className="text-4xl lg:text-6xl font-extrabold mb-4 tracking-tight">
+                <span className=" bg-clip-text text-gh-white">
+                  Verified GitHub contributions
+                </span>
+              </h1>
+              <p className="text-base-content/70 text-base lg:text-lg mb-6">
+                Top developers ranked by total contributions
+              </p>
+
+              <div className="flex justify-center">
+                <GitHubConnectButton label="Add my GitHub" />
+              </div>
+            </div>
+
+            {/* Content Card */}
+            <div className="card bg-base-100 shadow-xl rounded-gh border border-base-200">
+              <div className="card-body p-0">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-24">
+                    <span className="loading loading-spinner loading-lg text-primary"></span>
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="text-center py-24 px-4">
+                    <UserIcon className="mx-auto h-16 w-16 text-base-content/30 mb-4" />
+                    <h3 className="text-xl font-semibold text-base-content mb-2">
+                      No contributors yet
+                    </h3>
+                    <p className="text-base-content/60">
+                      Be the first to add your GitHub account!
+                    </p>
+                  </div>
+                ) : (
+                  <LeaderboardTable
+                    users={filteredUsers}
+                    currentUserGithubUsername={currentUser?.github_username}
+                  />
+                )}
+              </div>
+            </div>
           </div>
-        ) : users.length === 0 ? (
-          <div className="text-center py-24">
-            <UserIcon className="mx-auto h-16 w-16 text-gray-600 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-300 mb-2">
-              No contributors yet
-            </h3>
-            <p className="text-gray-500">
-              Be the first to add your GitHub account!
-            </p>
+
+          {/* Right Sponsor Panel - Desktop only - 1 column */}
+          <div className=" col-span-1">
+            <SponsorPanel sponsors={rightSponsors} />
           </div>
-        ) : (
-          <LeaderboardTable
-            users={users}
-            currentUserGithubUsername={currentUser?.github_username}
-          />
-        )}
+        </div>
       </div>
     </main>
   )

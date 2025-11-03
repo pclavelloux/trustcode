@@ -1,9 +1,15 @@
+import './css/style.css'
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import Theme from './theme-provider'
+import AppProvider from './app-provider'
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
 export const metadata: Metadata = {
   title: "TrustCode - GitHub Contributions Leaderboard",
@@ -16,11 +22,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          {children}
-        </ThemeProvider>
+    <html lang="en" className={`${inter.variable}`} data-theme="gh" suppressHydrationWarning>
+      <body className="font-inter antialiased bg-gh-primary text-gh-white">
+        <Theme>
+          <AppProvider>
+            {children}
+          </AppProvider>
+        </Theme>
       </body>
     </html>
   );
