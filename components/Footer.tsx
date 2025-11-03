@@ -44,6 +44,16 @@ export default function Footer() {
             >
               Terms of Services
             </Link>
+            
+            {/* Analytics Link */}
+            <Link
+              href="https://datafa.st/share/69090f8c0de14f3c74d0c61b"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-base-content/70 hover:text-base-content transition-colors text-sm"
+            >
+              Analytics
+            </Link>
           </div>
         </div>
       </div>

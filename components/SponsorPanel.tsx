@@ -16,18 +16,113 @@ interface SponsorPanelProps {
   side?: 'left' | 'right'
 }
 
-// Helper function to generate simple icon based on sponsor name
-const generateIcon = (name: string) => {
-  const initials = name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+// Helper function to get favicon URL from website URL
+const getFaviconUrl = (websiteUrl: string | null): string => {
+  if (!websiteUrl) return ''
+  try {
+    const url = new URL(websiteUrl)
+    const domain = url.hostname
+    // Use Google's favicon service for reliable favicon fetching
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+  } catch {
+    return ''
+  }
+}
+
+// Component for individual sponsor card
+function SponsorCard({ sponsor, side }: { sponsor: Sponsor; side: 'left' | 'right' }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const faviconUrl = getFaviconUrl(sponsor.website_url)
 
   return (
-    <div className="w-full h-full rounded-gh flex items-center justify-center text-lg font-bold bg-primary/20 text-primary">
-      {initials}
+    <div
+      className="relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      <a
+        href={sponsor.website_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
+        <div className="card bg-base-100 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group border border-base-300 rounded-gh">
+          <div className="card-body p-4">
+            <div className="flex items-start gap-3">
+              <div className="avatar placeholder">
+                <div className="rounded-gh w-12 h-12 flex items-center justify-center overflow-hidden bg-base-200">
+                  {faviconUrl ? (
+                    <img
+                      src={faviconUrl}
+                      alt={sponsor.company_name || 'Sponsor'}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        // Fallback to initials if favicon fails to load
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                        const fallback = target.nextElementSibling as HTMLElement
+                        if (fallback) fallback.style.display = 'flex'
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="w-full h-full rounded-gh flex items-center justify-center text-lg font-bold bg-primary/20 text-primary"
+                    style={{ display: faviconUrl ? 'none' : 'flex' }}
+                  >
+                    {sponsor.company_name
+                      ?.split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2) || '?'}
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-base-content group-hover:text-primary transition-colors text-sm mb-1">
+                  {sponsor.company_name}
+                </h3>
+                {sponsor.description && (
+                  <p className="text-xs text-base-content/70 line-clamp-3 leading-relaxed">
+                    {sponsor.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+      
+      {/* Tooltip with thumbnail and full description */}
+      {showTooltip && sponsor.description && (
+        <div
+          className={`absolute z-[9999] top-0 w-80 bg-gh-tertiary border border-base-300 rounded-gh shadow-2xl p-4 ${
+            side === 'left' ? 'left-full ml-4' : 'right-full mr-4'
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            {faviconUrl && (
+              <img
+                src={faviconUrl}
+                alt={sponsor.company_name || 'Sponsor'}
+                className="w-16 h-16 rounded-gh object-contain bg-base-200 p-2"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  target.style.display = 'none'
+                }}
+              />
+            )}
+            <div className="flex-1">
+              <h4 className="font-semibold text-base-content text-sm mb-2">
+                {sponsor.company_name}
+              </h4>
+              <p className="text-xs text-base-content/80 leading-relaxed whitespace-pre-wrap">
+                {sponsor.description}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -86,10 +181,16 @@ export default function SponsorPanel({ side = 'left' }: SponsorPanelProps) {
     }
   }
 
-  // Get the 5 sponsors for this side (left: 0-4, right: 5-9)
-  const startIndex = side === 'left' ? 0 : 5
-  const endIndex = side === 'left' ? 5 : 10
-  const sideSponsors = sponsors.slice(startIndex, endIndex)
+  // Get sponsors for this side with alternating pattern (left: even indices, right: odd indices)
+  // Left: 0, 2, 4, 6, 8 (indices pairs)
+  // Right: 1, 3, 5, 7, 9 (indices impairs)
+  const sideSponsors = sponsors.filter((_, index) => {
+    if (side === 'left') {
+      return index % 2 === 0 // Even indices go to left
+    } else {
+      return index % 2 === 1 // Odd indices go to right
+    }
+  }).slice(0, 5) // Limit to 5 sponsors per side
   
   // Show one empty slot only if we have less than 5 sponsors
   const showEmptySlot = sideSponsors.length < 5
@@ -112,35 +213,7 @@ export default function SponsorPanel({ side = 'left' }: SponsorPanelProps) {
     <div className="space-y-4 sticky top-4 min-w-0">
       {/* Display all sponsors for this side */}
       {sideSponsors.map((sponsor) => (
-        <a
-          key={sponsor.id}
-          href={sponsor.website_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          <div className="card bg-base-100 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group border border-base-300 rounded-gh">
-            <div className="card-body p-4">
-              <div className="flex items-start gap-3">
-                <div className="avatar placeholder">
-                  <div className="rounded-gh w-12 h-12 flex items-center justify-center overflow-hidden">
-                    {generateIcon(sponsor.company_name)}
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-base-content group-hover:text-primary transition-colors text-sm mb-1">
-                    {sponsor.company_name}
-                  </h3>
-                  {sponsor.description && (
-                    <p className="text-xs text-base-content/70 line-clamp-3 leading-relaxed">
-                      {sponsor.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </a>
+        <SponsorCard key={sponsor.id} sponsor={sponsor} side={side} />
       ))}
       
       {/* Show one empty slot if there's room */}
