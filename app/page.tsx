@@ -36,15 +36,20 @@ export default function Home() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await fetch('/api/users')
+      setIsLoading(true)
+      const response = await fetch('/api/users', {
+        // Add cache headers to reduce server load
+        cache: 'default',
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch users')
       }
       const data = await response.json()
-      setUsers(data)
+      setUsers(data || [])
     } catch (error) {
       console.error('Error fetching users:', error)
       setErrorMessage('Failed to load users')
+      setUsers([]) // Set empty array on error
     } finally {
       setIsLoading(false)
     }
