@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { fetchGitHubContributions } from "@/lib/github";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -106,8 +107,29 @@ export async function GET(request: NextRequest) {
             totalContributions
           );
 
-          // Mettre à jour le profil avec les contributions
-          const { error: updateError, data: updateData } = await supabase
+          // Créer un client admin pour bypasser RLS lors de l'UPDATE
+          // Cela évite les problèmes de timing où auth.uid() n'est pas encore disponible
+          const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          
+          if (!supabaseServiceKey) {
+            console.error("⚠️ SUPABASE_SERVICE_ROLE_KEY not configured, falling back to anon key (may fail due to RLS)");
+          }
+
+          const supabaseAdmin = supabaseServiceKey 
+            ? createClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                supabaseServiceKey,
+                {
+                  auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                  }
+                }
+              )
+            : supabase; // Fallback to regular client if service key not available
+
+          // Mettre à jour le profil avec les contributions (using admin client to bypass RLS)
+          const { error: updateError, data: updateData } = await supabaseAdmin
           .from('profiles')
           .update({
             contributions_data: contributions,
