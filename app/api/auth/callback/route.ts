@@ -67,7 +67,18 @@ export async function GET(request: NextRequest) {
           session.user.user_metadata.user_name ||
           session.user.user_metadata.preferred_username;
 
-        if (githubUsername) {
+        console.log("🔍 DEBUG - GitHub username:", githubUsername);
+        console.log("🔍 DEBUG - Provider token exists:", !!session.provider_token);
+        
+        if (!githubUsername) {
+          console.error("❌ No GitHub username found in user_metadata");
+        }
+        
+        if (!session.provider_token) {
+          console.error("❌ No provider_token in session - GitHub OAuth might not be configured properly");
+        }
+
+        if (githubUsername && session.provider_token) {
           const contributions = await fetchGitHubContributions(
             githubUsername,
             session.provider_token
