@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Megaphone } from 'lucide-react'
-import { motion } from 'framer-motion'
 
 interface Sponsor {
   id: string
@@ -41,6 +40,7 @@ export default function SponsorBannerMobile() {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchSponsors()
@@ -92,6 +92,69 @@ export default function SponsorBannerMobile() {
     }
   }
 
+  // Duplicate items for infinite scroll
+  const allItems = [
+    ...sponsors.map(sponsor => ({ type: 'sponsor' as const, data: sponsor })),
+    { type: 'empty' as const, data: null }
+  ]
+  const duplicatedItems = [...allItems, ...allItems]
+
+  // Calculate card width + gap for proper animation
+  const cardWidth = 200 // w-[200px]
+  const gap = 16 // gap-4 = 1rem = 16px
+  const singleSetWidth = allItems.length * (cardWidth + gap)
+  const totalWidth = singleSetWidth * 2
+
+  // Setup CSS animation with pause/resume
+  // This useEffect must be called before any early returns to maintain Hook order
+  useEffect(() => {
+    if (!containerRef.current || loading || sponsors.length === 0) return
+
+    const container = containerRef.current
+    const animationDuration = 30 // seconds
+
+    // Create or update CSS animation
+    const styleId = 'sponsor-banner-animation'
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement
+    
+    if (!styleElement) {
+      styleElement = document.createElement('style')
+      styleElement.id = styleId
+      document.head.appendChild(styleElement)
+    }
+
+    const keyframes = `
+      @keyframes sponsor-banner-scroll {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-${singleSetWidth}px);
+        }
+      }
+    `
+
+    styleElement.textContent = keyframes
+
+    // Apply animation styles with GPU acceleration
+    container.style.animation = isPaused 
+      ? 'none' 
+      : `sponsor-banner-scroll ${animationDuration}s linear infinite`
+    container.style.willChange = 'transform'
+    container.style.transform = 'translateZ(0)' // Force GPU acceleration
+    container.style.backfaceVisibility = 'hidden' // Optimize rendering
+    container.style.perspective = '1000px' // Enable 3D transforms
+
+    // Cleanup
+    return () => {
+      if (container) {
+        container.style.animation = 'none'
+        container.style.willChange = 'auto'
+      }
+    }
+  }, [isPaused, singleSetWidth, loading, sponsors.length])
+
+  // Early returns after all Hooks have been called
   if (loading) {
     return null
   }
@@ -201,19 +264,6 @@ export default function SponsorBannerMobile() {
     </div>
   )
 
-  // Duplicate items for infinite scroll
-  const allItems = [
-    ...sponsors.map(sponsor => ({ type: 'sponsor', data: sponsor })),
-    { type: 'empty', data: null }
-  ]
-  const duplicatedItems = [...allItems, ...allItems]
-
-  // Calculate card width + gap for proper animation
-  const cardWidth = 200 // w-[200px]
-  const gap = 16 // gap-4 = 1rem = 16px
-  const singleSetWidth = allItems.length * (cardWidth + gap)
-  const totalWidth = singleSetWidth * 2
-
   const handleInteractionStart = () => {
     setIsPaused(true)
     if (scrollTimeoutRef.current) {
@@ -233,26 +283,20 @@ export default function SponsorBannerMobile() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-base-200 border-t border-base-300 md:hidden overflow-hidden">
-      <motion.div
-        className="flex gap-4 px-4 py-3 cursor-grab active:cursor-grabbing"
-        style={{ width: totalWidth }}
-        animate={isPaused ? {} : {
-          x: [0, -singleSetWidth],
+      <div
+        ref={containerRef}
+        className="flex gap-4 px-4 py-3"
+        style={{ 
+          width: totalWidth,
+          willChange: 'transform',
+          transform: 'translateZ(0)', // Force GPU acceleration
+          backfaceVisibility: 'hidden', // Optimize rendering
+          contain: 'layout style paint', // Isolate changes for better performance
         }}
-        transition={{
-          x: {
-            repeat: Infinity,
-            repeatType: 'loop',
-            duration: 30,
-            ease: 'linear',
-          },
-        }}
-        drag="x"
-        dragConstraints={{ left: -singleSetWidth * 2, right: 0 }}
-        dragElastic={0}
-        onDragStart={handleInteractionStart}
-        onDragEnd={handleInteractionEnd}
-        whileDrag={{ cursor: 'grabbing' }}
+        onTouchStart={handleInteractionStart}
+        onTouchEnd={handleInteractionEnd}
+        onMouseEnter={handleInteractionStart}
+        onMouseLeave={handleInteractionEnd}
       >
         {duplicatedItems.map((item, index) => {
           if (item.type === 'sponsor') {
@@ -261,7 +305,7 @@ export default function SponsorBannerMobile() {
             return renderEmptySlot(`empty-${index}`)
           }
         })}
-      </motion.div>
+      </div>
     </div>
   )
 }
