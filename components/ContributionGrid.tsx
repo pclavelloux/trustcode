@@ -117,27 +117,39 @@ function ContributionGrid({ contributionsData, username, compact = false }: Cont
   if (compact) {
     return (
       <div className="w-full">
-        <div className="overflow-x-auto overflow-y-visible pb-2 pt-16">
+        <div className="overflow-x-auto overflow-y-visible pb-2 pt-2">
           <div className="inline-block">
             {/* Contribution grid only - no labels */}
             <div className="flex gap-[2px]">
               {weeks.map((week, weekIndex) => (
                 <div key={weekIndex} className="flex flex-col gap-[2px]">
-                  {week.map((day, dayIndex) => (
+                  {week.map((day, dayIndex) => {
+                    // Position tooltip en haut si on est dans la première moitié de la semaine (jours 0-3)
+                    // et en bas si on est dans la deuxième moitié (jours 4-6)
+                    const isTopHalf = dayIndex < week.length / 2
+                    return (
                     <div
                       key={dayIndex}
                       className={`w-[10px] h-[10px] rounded-sm ${getLevelClasses(day.level)} transition-all hover:ring-2 hover:ring-gh-pink cursor-pointer relative group`}
                       title={`${format(day.date, 'MMM d, yyyy')}: ${day.count} contribution${day.count !== 1 ? 's' : ''}`}
                     >
-                      {/* Tooltip on hover */}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                        <span className="font-medium">{format(day.date, 'MMM d, yyyy')}</span>
-                        <br />
-                        {day.count} commit{day.count !== 1 ? 's' : ''}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                      {/* Tooltip on hover - position dynamique */}
+                      <div className={`absolute left-1/2 -translate-x-1/2 px-3 py-2 bg-gray-900 text-white text-xs rounded shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100] ${
+                        isTopHalf 
+                          ? 'top-full mb-2' 
+                          : 'bottom-full mt-2'
+                      }`}>
+                        <div className="font-semibold leading-tight mb-0.5">{format(day.date, 'MMM d, yyyy')}</div>
+                        <div className="text-gray-300 leading-tight">{day.count} commit{day.count !== 1 ? 's' : ''}</div>
+                        <div className={`absolute left-1/2 -translate-x-1/2 border-4 border-transparent ${
+                          isTopHalf 
+                            ? 'bottom-full border-t-gray-900' 
+                            : 'top-full border-b-gray-900'
+                        }`}></div>
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ))}
             </div>
@@ -194,21 +206,33 @@ function ContributionGrid({ contributionsData, username, compact = false }: Cont
             <div className="flex gap-[2px]">
               {weeks.map((week, weekIndex) => (
                 <div key={weekIndex} className="flex flex-col gap-[2px]">
-                  {week.map((day, dayIndex) => (
+                  {week.map((day, dayIndex) => {
+                    // Position tooltip en haut si on est dans la première moitié de la semaine (jours 0-3)
+                    // et en bas si on est dans la deuxième moitié (jours 4-6)
+                    const isTopHalf = dayIndex < week.length / 2
+                    return (
                     <div
                       key={dayIndex}
                       className={`w-[11px] h-[11px] rounded-[2px] ${getLevelClasses(day.level)} transition-all hover:ring-2 hover:ring-gh-pink cursor-pointer relative group`}
                       title={`${format(day.date, 'MMM d, yyyy')}: ${day.count} contribution${day.count !== 1 ? 's' : ''}`}
                     >
-                      {/* Tooltip on hover */}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                        <span className="font-medium">{format(day.date, 'MMM d, yyyy')}</span>
-                        <br />
-                        {day.count} commit{day.count !== 1 ? 's' : ''}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                      {/* Tooltip on hover - position dynamique */}
+                      <div className={`absolute left-1/2 -translate-x-1/2 px-3 py-2 bg-gray-900 text-white text-xs rounded shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100] ${
+                        isTopHalf 
+                          ? 'bottom-full mb-2' 
+                          : 'top-full mt-2'
+                      }`}>
+                        <div className="font-semibold leading-tight mb-0.5">{format(day.date, 'MMM d, yyyy')}</div>
+                        <div className="text-gray-300 leading-tight">{day.count} commit{day.count !== 1 ? 's' : ''}</div>
+                        <div className={`absolute left-1/2 -translate-x-1/2 border-4 border-transparent ${
+                          isTopHalf 
+                            ? 'top-full border-t-gray-900' 
+                            : 'bottom-full border-b-gray-900'
+                        }`}></div>
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ))}
             </div>

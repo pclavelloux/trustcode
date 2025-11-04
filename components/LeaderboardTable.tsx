@@ -362,8 +362,8 @@ export default function LeaderboardTable({ users, currentUserGithubUsername }: L
                   </td>
 
                   {/* Contribution Grid */}
-                  <td className="align-middle py-4 px-4">
-                    <div className="flex flex-col items-center">
+                  <td className="align-middle py-4 px-4 relative overflow-visible">
+                    <div className="flex flex-col items-center gap-1">
                       {/* Total Contributions - au-dessus de la grille */}
                       <div className="text-sm text-base-content/60 font-medium">
                           <span className="text-gh-pink font-bold"> {filteredContributions.toLocaleString()} </span>
