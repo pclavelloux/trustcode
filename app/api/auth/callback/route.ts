@@ -47,9 +47,34 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (session?.provider_token && session?.user) {
+    if (session?.user) {
       try {
-        // Vérifier si c'est une première connexion (profil existait déjà?)
+        // Récupérer les informations utilisateur
+        const githubUsername =
+          session.user.user_metadata.user_name ||
+          session.user.user_metadata.preferred_username;
+
+        // Logs de diagnostic
+        console.log('🔍 Session data:', {
+          hasProviderToken: !!session.provider_token,
+          providerTokenLength: session.provider_token?.length || 0,
+          userId: session.user.id,
+          username: githubUsername
+        })
+        
+        // Vérifier les prérequis
+        if (!githubUsername) {
+          console.error("❌ No GitHub username found in user_metadata");
+        }
+        
+        if (!session.provider_token) {
+          console.error('❌ PROBLEM: provider_token is missing from session!')
+          console.error('This usually means:')
+          console.error('1. GitHub provider in Supabase is not configured to return the provider token')
+          console.error('2. Check Dashboard > Authentication > Providers > GitHub > Enable Provider Refresh Token')
+        }
+
+        // Vérifier si c'est une première connexion
         const { data: existingProfile } = await supabase
           .from("profiles")
           .select("id, created_at")
@@ -62,22 +87,7 @@ export async function GET(request: NextRequest) {
             new Date(existingProfile.created_at).getTime() >
               Date.now() - 60000); // Créé il y a moins d'1 minute
 
-        // Récupérer les contributions GitHub
-        const githubUsername =
-          session.user.user_metadata.user_name ||
-          session.user.user_metadata.preferred_username;
-
-        console.log("🔍 DEBUG - GitHub username:", githubUsername);
-        console.log("🔍 DEBUG - Provider token exists:", !!session.provider_token);
-        
-        if (!githubUsername) {
-          console.error("❌ No GitHub username found in user_metadata");
-        }
-        
-        if (!session.provider_token) {
-          console.error("❌ No provider_token in session - GitHub OAuth might not be configured properly");
-        }
-
+        // Récupérer et mettre à jour les contributions
         if (githubUsername && session.provider_token) {
           const contributions = await fetchGitHubContributions(
             githubUsername,
@@ -89,14 +99,11 @@ export async function GET(request: NextRequest) {
             0
           );
 
-          // Mettre à jour le profil avec les contributions
-          console.log("🔍 DEBUG - User ID:", session.user.id);
-          console.log("🔍 DEBUG - Session valid:", !!session);
-          console.log("🔍 DEBUG - Provider token:", !!session.provider_token);
           console.log(
-            "🔍 DEBUG - Contributions fetched:",
+            "✅ Contributions fetched:",
             Object.keys(contributions).length,
-            "days"
+            "days, total:",
+            totalContributions
           );
 
           // Mettre à jour le profil avec les contributions
@@ -116,7 +123,7 @@ export async function GET(request: NextRequest) {
               JSON.stringify(updateError, null, 2)
             );
           } else {
-            console.log("✅ Update successful:", updateData);
+            console.log("✅ Update successful, total contributions:", totalContributions);
           }
 
           // Si c'est une première connexion, ajouter un paramètre dans l'URL
