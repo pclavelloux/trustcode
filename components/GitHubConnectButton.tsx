@@ -17,18 +17,31 @@ export default function GitHubConnectButton({ isAuthenticated, onSignOut, label 
   const handleConnect = async () => {
     setIsLoading(true)
     try {
-      // Utiliser NEXT_PUBLIC_SITE_URL si disponible (définie au build), sinon utiliser window.location.origin
-      // En production, assurez-vous que NEXT_PUBLIC_SITE_URL est définie dans vos variables d'environnement
+      // Utiliser window.location.origin pour garantir la bonne URL en production
+      // Cela évite les problèmes avec process.env qui est évalué au build time
       const baseUrl = typeof window !== 'undefined' 
-        ? (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin)
+        ? window.location.origin
         : ''
+      
+      if (!baseUrl) {
+        console.error('Unable to determine base URL')
+        alert('Unable to determine base URL. Please refresh the page.')
+        setIsLoading(false)
+        return
+      }
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
           redirectTo: `${baseUrl}/api/auth/callback`,
+          // Le scope 'read:user' suffit pour accéder aux contributions publiques via GraphQL
           scopes: 'read:user',
           skipBrowserRedirect: false,
+          queryParams: {
+            // Demandons explicitement le provider_token
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       })
       
@@ -87,7 +100,7 @@ export default function GitHubConnectButton({ isAuthenticated, onSignOut, label 
         </>
       ) : (
         <>
-          <FaGithub className="w-3.5 h-3.5 flex-shrink-0" />
+          <FaGithub className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap text-sm">{label || 'Add my GitHub'}</span>
         </>
       )}
