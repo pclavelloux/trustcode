@@ -132,7 +132,7 @@ export default function LeaderboardTable({ users, currentUserGithubUsername }: L
   const MemoizedContributionGrid = memo(ContributionGrid)
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" style={{ touchAction: 'pan-y pan-x', WebkitOverflowScrolling: 'touch' }}>
       {/* Search bar and time filter */}
       <div className="p-4 border-b border-gray-600/30 bg-gh-tertiary">
         <div className="flex flex-col sm:flex-row gap-4">

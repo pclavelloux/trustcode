@@ -178,7 +178,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-base-300 pb-32 md:pb-0">
+    <main className="bg-base-300 pb-32 md:pb-0" style={{ minHeight: '100vh', touchAction: 'pan-y pan-x', WebkitOverflowScrolling: 'touch' }}>
       {/* Header */}
       <Header
         currentUser={currentUser}
