@@ -193,3 +193,4 @@ Techniquement oui, mais ce n'est pas recommandé. Supabase Auth est :
 
 Si vous rencontrez des problèmes, consultez [QUICKSTART.md](QUICKSTART.md) ou ouvrez une issue.
 
+

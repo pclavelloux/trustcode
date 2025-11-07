@@ -23,3 +23,4 @@ DROP VIEW IF EXISTS public.profiles_with_rank;
 
 -- Après exécution de ce script, réexécutez supabase-schema.sql pour recréer la structure
 
+

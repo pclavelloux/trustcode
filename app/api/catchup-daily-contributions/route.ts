@@ -4,12 +4,17 @@ import { fetchGitHubContributions } from '@/lib/github'
 import { upsertDailyContributions } from '@/lib/contributions'
 
 /**
- * Route cron pour rafraîchir automatiquement les contributions GitHub
- * Appelée toutes les 12 heures via Vercel Cron Jobs
+ * Endpoint pour rattraper les lignes manquantes dans daily_contributions
+ * 
+ * Cet endpoint:
+ * 1. Récupère tous les profils avec un github_token
+ * 2. Pour chaque profil, récupère les contributions GitHub
+ * 3. Compare avec ce qui existe dans daily_contributions
+ * 4. Insère les jours manquants
  * 
  * Protection: Vérifie le secret CRON_SECRET dans les headers
  */
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // Vérifier le secret pour protéger l'endpoint
     const authHeader = request.headers.get('authorization')
@@ -70,13 +75,17 @@ export async function GET(request: NextRequest) {
         message: 'No profiles with GitHub tokens found',
         updated: 0,
         failed: 0,
+        added: 0,
       })
     }
 
-    // Rafraîchir les contributions pour chaque profil
+    console.log(`📊 Found ${profiles.length} profiles with GitHub tokens`)
+
+    // Rattraper les contributions pour chaque profil
     let updated = 0
     let failed = 0
-    const errors: Array<{ userId: string; error: string }> = []
+    let totalAdded = 0
+    const errors: Array<{ userId: string; username: string; error: string }> = []
 
     for (const profile of profiles) {
       try {
@@ -90,89 +99,85 @@ export async function GET(request: NextRequest) {
           profile.github_token
         )
 
-        const totalContributions = Object.values(contributions).reduce(
-          (sum, count) => sum + count,
-          0
-        )
+        // Récupérer les contributions existantes dans daily_contributions
+        const { data: existingContributions, error: existingError } = await supabase
+          .from('daily_contributions')
+          .select('date')
+          .eq('user_id', profile.id)
 
-        // Mettre à jour le profil avec les nouvelles données
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            contributions_data: contributions,
-            total_contributions: totalContributions,
-            last_updated: new Date().toISOString(),
-          })
-          .eq('id', profile.id)
-
-        if (updateError) {
-          throw updateError
+        if (existingError) {
+          throw new Error(`Failed to fetch existing contributions: ${existingError.message}`)
         }
 
-        // Insérer/mettre à jour les contributions quotidiennes dans daily_contributions
-        try {
-          // Vérifier les dates manquantes pour le logging
-          const { data: existingContributions } = await supabase
-            .from('daily_contributions')
-            .select('date')
-            .eq('user_id', profile.id)
+        const existingDates = new Set(
+          (existingContributions || []).map((c) => c.date)
+        )
 
-          const existingDates = new Set(
-            (existingContributions || []).map((c) => c.date)
-          )
-          const missingDates = Object.keys(contributions).filter(
-            (date) => !existingDates.has(date)
+        // Trouver les dates manquantes
+        const missingDates = Object.keys(contributions).filter(
+          (date) => !existingDates.has(date)
+        )
+
+        if (missingDates.length > 0) {
+          console.log(
+            `📅 Found ${missingDates.length} missing dates for ${profile.github_username}`
           )
 
-          // Insérer/mettre à jour toutes les contributions
+          // Insérer/mettre à jour toutes les contributions (y compris les manquantes)
           await upsertDailyContributions(
             profile.id,
             contributions,
             supabase
           )
 
-          if (missingDates.length > 0) {
-            console.log(
-              `✅ Updated contributions for ${profile.github_username} (added ${missingDates.length} missing dates)`
-            )
-          } else {
-            console.log(`✅ Updated contributions for ${profile.github_username}`)
-          }
-        } catch (dailyContribError) {
-          console.error(
-            `⚠️ Failed to upsert daily contributions for ${profile.github_username}:`,
-            dailyContribError
+          totalAdded += missingDates.length
+          updated++
+          console.log(
+            `✅ Added ${missingDates.length} missing dates for ${profile.github_username}`
           )
-          // Ne pas bloquer le processus si l'upsert échoue
+        } else {
+          // Même s'il n'y a pas de dates manquantes, on met à jour pour s'assurer que les données sont à jour
+          await upsertDailyContributions(
+            profile.id,
+            contributions,
+            supabase
+          )
+          updated++
+          console.log(
+            `✅ Updated contributions for ${profile.github_username} (no missing dates)`
+          )
         }
-
-        updated++
       } catch (error) {
         failed++
         const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         errors.push({
           userId: profile.id,
+          username: profile.github_username || 'unknown',
           error: errorMessage,
         })
-        console.error(`❌ Failed to update contributions for ${profile.github_username}:`, errorMessage)
+        console.error(
+          `❌ Failed to catchup contributions for ${profile.github_username}:`,
+          errorMessage
+        )
         // Continue avec les autres profils même si celui-ci échoue
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: `Refreshed contributions for ${updated} profiles`,
+      message: `Catchup completed: ${updated} profiles updated, ${totalAdded} missing dates added, ${failed} failed`,
       updated,
       failed,
+      totalAdded,
       total: profiles.length,
       errors: errors.length > 0 ? errors : undefined,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Error in cron job:', error)
+    console.error('Error in catchup script:', error)
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : 'Failed to refresh contributions',
+        error: error instanceof Error ? error.message : 'Failed to catchup contributions',
         timestamp: new Date().toISOString(),
       },
       { status: 500 }

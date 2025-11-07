@@ -197,6 +197,35 @@ Similaire à cron-job.org, avec monitoring en bonus.
 - Vérifiez les logs pour voir quels profils ont échoué
 - Les tokens GitHub expirés seront ignorés (mais pas supprimés)
 
+### Rattraper les lignes manquantes dans daily_contributions
+
+Si vous avez l'impression que certaines dates manquent dans la table `daily_contributions`, vous pouvez utiliser l'endpoint de rattrapage :
+
+```bash
+# Remplacer YOUR_CRON_SECRET par votre secret
+curl -X POST "https://your-app.vercel.app/api/catchup-daily-contributions" \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+Cet endpoint :
+1. Récupère tous les profils avec un `github_token`
+2. Pour chaque profil, récupère les contributions GitHub
+3. Compare avec ce qui existe dans `daily_contributions`
+4. Insère les jours manquants
+
+Vous devriez recevoir une réponse JSON avec :
+```json
+{
+  "success": true,
+  "message": "Catchup completed: X profiles updated, Y missing dates added, Z failed",
+  "updated": X,
+  "failed": Z,
+  "totalAdded": Y,
+  "total": X,
+  "timestamp": "2024-01-01T12:00:00.000Z"
+}
+```
+
 ## 📝 Notes importantes
 
 1. **Une fois par jour** : Le cron job s'exécute à 00:00 UTC chaque jour

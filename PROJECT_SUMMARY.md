@@ -307,3 +307,4 @@ Contributions bienvenues ! Voir CONTRIBUTING.md
 **Dernière mise à jour**: 2 novembre 2025  
 **Auteur**: TrustCode Team
 
+

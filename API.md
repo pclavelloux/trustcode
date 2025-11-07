@@ -194,3 +194,4 @@ Cookie HTTP-only défini après une authentification réussie.
 
 Ce cookie est utilisé pour identifier l'utilisateur actuel et lui permettre d'éditer son profil.
 
+
